@@ -27,8 +27,8 @@ void setup() {
   pinMode(led3, OUTPUT);
   pinMode(led4, OUTPUT);
   //start serial for debugging hall effect sensor state
-  Serial.begin(9600);
-  Serial.println("amogus");
+  Serial.begin(115200);
+  Serial.println("vsz_led-start");
 }
 
 void loop() {
