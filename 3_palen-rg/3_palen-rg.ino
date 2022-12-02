@@ -9,11 +9,15 @@ const int led2 = 6; //led2 (red) is connected to output pin 6
 const int led3 = 7; //led3 (red) is connected to output pin 7
 const int led4 = 16; //led4 (red) is connected to output pin 16
 
-//initialize sensor states and time
-int zuid = 0;
-int west = 0;
-int oost = 0;
+//initialize sensor states
+bool zuid = 0;
+bool west = 0;
+bool oost = 0;
+
+//initialize time
 int time = 0;
+
+int count = 0;
 
 void setup() {
   //configure hall effect pin as input
@@ -32,25 +36,26 @@ void setup() {
 }
 
 void loop() {
+  count++;
   //turn off green led if it was on
   digitalWrite(ledgreen, LOW);
   
   //fetch hall effect sensor state
-  oost = digitalRead(halleffect1);
-  zuid = digitalRead(halleffect2);
-  west = digitalRead(halleffect3);
+  oost = digitalRead(halleffect1)==LOW;
+  zuid = digitalRead(halleffect2)==LOW;
+  west = digitalRead(halleffect3)==LOW;
 
 
-  if (oost == LOW | zuid == LOW | west == LOW) {
+  if (oost | zuid | west) {
     //input detected
-    if (zuid == LOW) {
+    if (zuid) {
       digitalWrite(led2, HIGH);
       digitalWrite(led4, HIGH);
     }
-    if (oost == LOW) {
+    if (oost) {
       digitalWrite(led1, HIGH);
     }
-    if (west == LOW) {
+    if (west) {
       digitalWrite(led3, HIGH);
     }
   } else {
@@ -67,6 +72,10 @@ void loop() {
       time = 0;
       //turn on green led
       digitalWrite(ledgreen, HIGH);
+
+      Serial.print("vsz_led-heartbeat ");
+      Serial.println(count);
+
       //wait
       delay(100);
     }
