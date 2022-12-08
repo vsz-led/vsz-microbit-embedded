@@ -10,9 +10,9 @@ const int led3 = 7; //led3 (red) is connected to output pin 7
 const int led4 = 16; //led4 (red) is connected to output pin 16
 
 //initialize sensor states
-bool zuid = 0;
-bool west = 0;
-bool oost = 0;
+bool zuid = false;
+bool west = false;
+bool oost = false;
 
 //initialize time
 int time = 0;
