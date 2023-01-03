@@ -32,70 +32,99 @@ void setup() {
   leds.begin();
   //start serial for debugging hall effect sensor state
   Serial.begin(115200);
-  Serial.println("vsz_led-start");
+  Serial.println("event_start");
 }
 
 void loop() {
   count++;
-  //turn off green led if it was on
+  
+  //fetch hall effect sensor state
+  bool oost_now = digitalRead(halleffect1)==LOW;
+  bool zuid_now = digitalRead(halleffect2)==LOW;
+  bool west_now = digitalRead(halleffect3)==LOW;
+
+  if (oost_now | zuid_now | west_now) {
+    //one of the sensors is currently on
+
+    if (oost | zuid | west) {
+      //one of the sensors was on last loop iteration (sensor is still on)
+      return;
+
+    } else {
+      //none of the sensors was on last loop iteration (sensor just came on)
+      if (zuid_now) {
+        Serial.println("event_zuid");
+        leds.setPixelColor(0, leds.Color(255, 0, 0));
+        leds.setPixelColor(3, leds.Color(255, 0, 0));
+      }
+      if (oost_now) {
+        Serial.println("event_oost");
+        leds.setPixelColor(2, leds.Color(255, 0, 0));
+      }
+      if (west_now) {
+        Serial.println("event_west");
+        leds.setPixelColor(1, leds.Color(255, 0, 0));
+      }
+      leds.show();
+    }
+
+  } else {
+    //none of the sensors is currently on
+    if (oost | zuid | west) {
+      //one of the sensors was on last loop iteration (sensor was on but is now off)
+
+      //keep led on for a 10 seconds
+      delay(10000);
+
+      //turn off leds
+      for (int i = 0; i < 4; i++) {
+        leds.setPixelColor(i, leds.Color(0, 0, 0));
+      }
+      leds.show();
+
+    } else {
+      //none of the sensors was on last loop iteration
+
+      time++;
+      //check if time limit to heartbeat has been reached
+      if (time >= 500) {
+        heartbeat();
+      }
+    }
+
+  }
+
+  //store values
+  oost = oost_now;
+  zuid = zuid_now;
+  west = west_now;
+
+  //delay to keep counter static
+  delay(10);
+}
+
+void heartbeat() {
+  //reset time limit
+  time = 0;
+
+  //turn on green leds
+  for (int i = 0; i < 4; i++) {
+    leds.setPixelColor(i, leds.Color(0, 255, 0));
+  }
+  leds.show();
+
+  //print heartbeat to serial console
+  Serial.print("event_heartbeat_");
+  Serial.println(count);
+
+  //wait
+  delay(100);
+
+  //turn off green leds
   for (int i = 0; i < 4; i++) {
     leds.setPixelColor(i, leds.Color(0, 0, 0));
   }
   leds.show();
-  
-  //fetch hall effect sensor state
-  oost = digitalRead(halleffect1)==LOW;
-  zuid = digitalRead(halleffect2)==LOW;
-  west = digitalRead(halleffect3)==LOW;
-
-
-  if (oost | zuid | west) {
-    //input detected
-    if (zuid) {
-      Serial.println("zuid");
-      leds.setPixelColor(0, leds.Color(255, 0, 0));
-      leds.setPixelColor(3, leds.Color(255, 0, 0));
-      leds.show();
-    }
-    if (oost) {
-      Serial.println("oost");
-      leds.setPixelColor(2, leds.Color(255, 0, 0));
-      leds.show();
-    }
-    if (west) {
-      Serial.println("west");
-      leds.setPixelColor(1, leds.Color(255, 0, 0));
-      leds.show();
-    }
-  } else {
-    //input not detected, red led can turn off and time can increase for idle led
-    leds.setPixelColor(1, leds.Color(0, 0, 0));
-    leds.setPixelColor(2, leds.Color(0, 0, 0));
-    leds.setPixelColor(3, leds.Color(0, 0, 0));
-    leds.setPixelColor(4, leds.Color(0, 0, 0));
-    leds.show();
-    time++;
-    
-    //check if time limit to blink has been reached
-    if (time >= 500) {
-      //reset time limit
-      time = 0;
-      //turn on green led
-      for (int i = 0; i < 4; i++) {
-        leds.setPixelColor(i, leds.Color(0, 255, 0));
-      }
-      leds.show();
-
-      Serial.print("vsz_led-heartbeat ");
-      Serial.println(count);
-
-      //wait
-      delay(100);
-    }
-  }
-
-  //delay to keep counter static
-  delay(10);
 }
 
 void testsensors() {
