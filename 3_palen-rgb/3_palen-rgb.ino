@@ -5,7 +5,7 @@ const int halleffect2 = 1; //hall effect sensor 2 is connected to input pin 1
 const int halleffect3 = 2; //hall effect sensor 3 is connected to input pin 2
 
 // ledstrip has 30 leds
-const int numleds = 30;
+const int numleds = 4;
 
 // ledstrip is connected to pin 16
 const int ledstrippin = 16;
@@ -48,22 +48,29 @@ void loop() {
 
     if (oost | zuid | west) {
       //one of the sensors was on last loop iteration (sensor is still on)
-      return;
+      if (zuid_now) {
+        blink(0);
+      }
+      if (oost_now) {
+        blink(1);
+      }
+      if (west_now) {
+        blink(2);
+      }
 
     } else {
       //none of the sensors was on last loop iteration (sensor just came on)
       if (zuid_now) {
         Serial.println("event_zuid");
-        leds.setPixelColor(0, leds.Color(255, 0, 0));
-        leds.setPixelColor(3, leds.Color(255, 0, 0));
+        blink(0);
       }
       if (oost_now) {
         Serial.println("event_oost");
-        leds.setPixelColor(2, leds.Color(255, 0, 0));
+        blink(1);
       }
       if (west_now) {
         Serial.println("event_west");
-        leds.setPixelColor(1, leds.Color(255, 0, 0));
+        blink(2);
       }
       leds.show();
     }
@@ -72,15 +79,15 @@ void loop() {
     //none of the sensors is currently on
     if (oost | zuid | west) {
       //one of the sensors was on last loop iteration (sensor was on but is now off)
-
-      //keep led on for a 10 seconds
-      delay(10000);
-
-      //turn off leds
-      for (int i = 0; i < 4; i++) {
-        leds.setPixelColor(i, leds.Color(0, 0, 0));
+      if (zuid) {
+        for (int i=0;i<=10;i++) blink(0);
       }
-      leds.show();
+      if (oost) {
+        for (int i=0;i<=10;i++) blink(1);
+      }
+      if (west) {
+        for (int i=0;i<=10;i++) blink(2);     
+      }
 
     } else {
       //none of the sensors was on last loop iteration
@@ -101,6 +108,37 @@ void loop() {
 
   //delay to keep counter static
   delay(10);
+}
+
+void blink(int richting) {
+  switch (richting) {
+    case 0:
+      leds.setPixelColor(0, leds.Color(255, 128, 0));
+      leds.setPixelColor(3, leds.Color(255, 128, 0));
+      leds.show();
+      delay(500);
+      leds.setPixelColor(0, leds.Color(0, 0, 0));
+      leds.setPixelColor(3, leds.Color(0, 0, 0));
+      leds.show();
+      delay(500);
+      break;
+    case 1:
+      leds.setPixelColor(2, leds.Color(255, 128, 0));
+      leds.show();
+      delay(500);
+      leds.setPixelColor(2, leds.Color(0, 0, 0));
+      leds.show();
+      delay(500);
+      break;
+    case 2:
+      leds.setPixelColor(1, leds.Color(255, 128, 0));
+      leds.show();
+      delay(500);
+      leds.setPixelColor(1, leds.Color(0, 0, 0));
+      leds.show();
+      delay(500);
+      break;
+  }
 }
 
 void heartbeat() {
